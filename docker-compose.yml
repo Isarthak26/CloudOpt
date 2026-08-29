@@ -1,0 +1,39 @@
+services:
+  target-app:
+    build:
+      context: ./target-app
+    container_name: cloudopt-demo-target
+    ports:
+      - "8080:8080"
+
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    container_name: cloudopt-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - target-app
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: cloudopt-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus-data:
+  grafana_data:
