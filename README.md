@@ -25,6 +25,7 @@ CloudOpt AI is split into three practical parts:
 
 - `backend/` — the CloudOpt FastAPI application that serves the main project API and connects to PostgreSQL.
 - `target-app/` — a separate FastAPI workload that exposes predictable endpoints for monitoring and load testing.
+- `frontend/` — the Phase 8 React dashboard, a read-only view of the backend's experiment and recommendation endpoints.
 - Local monitoring stack — Prometheus scrapes the target app, and Grafana reads from Prometheus using provisioned datasource and dashboard files.
 
 In the current local setup, the target app serves traffic on port `8080`, Prometheus on `9090`, and Grafana on `3000`.
@@ -40,6 +41,7 @@ In the current local setup, the target app serves traffic on port `8080`, Promet
 - Grafana
 - k6
 - Pandas for the Phase 4 experiment dataset; scikit-learn is still later if needed
+- React, Vite, and Recharts for the Phase 8 dashboard
 
 ## Getting Started
 
@@ -49,6 +51,7 @@ In the current local setup, the target app serves traffic on port `8080`, Promet
 - PostgreSQL for the CloudOpt backend
 - Docker Desktop or a compatible Docker Engine setup
 - k6 for load testing (see [load-tests/README.md](load-tests/README.md) for install links)
+- Node.js `^20.19.0 || >=22.12.0` for the Phase 8 dashboard
 
 ### Installation
 
@@ -154,6 +157,18 @@ python3 ml/recommend.py --load-level low --max-p95-ms 50
 
 Default rule: among rows for that load level with `p95_latency_ms <= 50` and `http_req_failed_rate <= 0`, pick the smallest `cpu_limit` then `memory_limit_mb`. Unconstrained rows are treated as the largest allocation. This is not a trained model.
 
+### Phase 8 dashboard
+
+The dashboard runs alongside the backend. Start the backend first, then in a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The dev server proxies the backend routes to `http://127.0.0.1:8000`, so no CORS configuration is needed. See [frontend/README.md](frontend/README.md) for details.
+
 ## Project Status / Roadmap
 
 - [x] Phase 0 — Repository and architecture groundwork
@@ -171,7 +186,11 @@ Default rule: among rows for that load level with `p95_latency_ms <= 50` and `ht
   - Naive "always unconstrained" vs `ml/recommend.py` on frozen Phase 4 measurements (`ml/baseline_comparison.py`). Documented scope decision: retrospective analysis, not a fresh paired re-run (only revisit if time allows).
 - [ ] Phase 6 — Azure and infrastructure as code
 - [ ] Phase 7 — CI/CD and cloud validation
-- [ ] Phase 8 — React dashboard and final evaluation
+- [x] Phase 8 — React dashboard and final evaluation
+  - `frontend/` — React + Vite dashboard with five pages: Overview, Recommendations Explorer, Baseline Comparison, Experiment Data Explorer, Methodology
+  - Read-only: it calls `GET /experiments/dataset`, `GET /recommendations/{load_level}` and `GET /recommendations/comparison`, and duplicates none of the `ml/` selector logic
+  - Every page degrades gracefully when the backend is not running
+  - Setup and run instructions: [frontend/README.md](frontend/README.md)
 
 ## Contributing
 
