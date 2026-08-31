@@ -13,12 +13,20 @@ const UNREACHABLE = `Could not reach the backend${
   API_BASE_URL ? ` at ${API_BASE_URL}` : ""
 } — is it running on port 8000?`;
 
+const GATEWAY_STATUSES = new Set([502, 503, 504]);
+
 async function request(path) {
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`);
   } catch (error) {
     throw new ApiError(UNREACHABLE, { cause: error });
+  }
+
+  // A dev-proxy that cannot reach the backend answers with a gateway error
+  // rather than failing the fetch outright.
+  if (GATEWAY_STATUSES.has(response.status)) {
+    throw new ApiError(UNREACHABLE, { status: response.status });
   }
 
   if (!response.ok) {

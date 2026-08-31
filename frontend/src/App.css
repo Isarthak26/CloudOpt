@@ -228,6 +228,10 @@ details.explain summary {
   color: var(--danger);
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

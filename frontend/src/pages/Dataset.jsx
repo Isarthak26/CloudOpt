@@ -122,40 +122,42 @@ export default function Dataset() {
         <>
           <section className="card">
             <h2>All measured runs ({rows.length})</h2>
-            <table>
-              <thead>
-                <tr>
-                  {COLUMNS.map((column) => (
-                    <th
-                      key={column.key}
-                      className="sortable"
-                      onClick={() => toggleSort(column.key)}
-                    >
-                      {column.label}
-                      {sort.key === column.key
-                        ? sort.direction === "asc"
-                          ? " ▲"
-                          : " ▼"
-                        : ""}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sortedRows.map((row) => (
-                  <tr key={`${row.config_label}-${row.load_level}`}>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
                     {COLUMNS.map((column) => (
-                      <td
+                      <th
                         key={column.key}
-                        className={column.mono ? "mono" : undefined}
+                        className="sortable"
+                        onClick={() => toggleSort(column.key)}
                       >
-                        {formatCell(row, column)}
-                      </td>
+                        {column.label}
+                        {sort.key === column.key
+                          ? sort.direction === "asc"
+                            ? " ▲"
+                            : " ▼"
+                          : ""}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {sortedRows.map((row) => (
+                    <tr key={`${row.config_label}-${row.load_level}`}>
+                      {COLUMNS.map((column) => (
+                        <td
+                          key={column.key}
+                          className={column.mono ? "mono" : undefined}
+                        >
+                          {formatCell(row, column)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <p className="caption">
               Each row is one k6 run against the target app at a fixed CPU/memory
               limit. An early cold-start bug made the first requests of a run
