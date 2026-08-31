@@ -3,6 +3,7 @@
 CloudOpt AI is a student project for measuring application workloads, comparing resource configurations, and building toward data-driven cloud resource recommendations.
 
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
+[![CI](https://github.com/Isarthak26/CloudOpt/actions/workflows/ci.yml/badge.svg)](https://github.com/Isarthak26/CloudOpt/actions/workflows/ci.yml)
 
 ## About
 

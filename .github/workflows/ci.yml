@@ -1,0 +1,32 @@
+# Test automation only.
+# A Docker build/push or Azure deploy stage could be added later once Phase 6
+# (Azure / Terraform) exists. Do not add secrets or deploy jobs until then.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend and ml test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r ml/requirements.txt
+
+      - name: Run backend and ml tests
+        run: python -m pytest ml/tests backend/tests
