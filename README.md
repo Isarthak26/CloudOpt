@@ -153,9 +153,15 @@ Default rule: among rows for that load level with `p95_latency_ms <= 50` and `ht
 - [x] Phase 1 — Measurable local application
 - [x] Phase 2 — Local metrics and observability
 - [x] Phase 3 — Controlled experiments and result capture
-- [ ] Phase 4 — Dataset and simple ML
-  - Frozen 9-run CSV and a rule-based selector exist. scikit-learn is not started.
-- [ ] Phase 5 — Baseline comparison
+- [x] Phase 4 — Dataset and simple recommendation
+  - Frozen run manifest: `ml/canonical_runs.json`
+  - 9-row dataset: `ml/assemble_dataset.py` writes `ml/data/experiment_dataset.csv`
+  - Explainable selector: `ml/recommend.py` (threshold-based rule, not a trained model)
+  - Supporting Prometheus CPU/memory evidence: `ml/data/prometheus_stress_v1_high_load.json`
+  - Tests: `ml/tests/test_recommend.py`
+  - `ml/` does **not** forecast load, train a classifier, or change Docker/Azure. It only recommends among already-measured configurations.
+- [x] Phase 5 — Baseline comparison
+  - Naive "always unconstrained" vs `ml/recommend.py` on frozen Phase 4 measurements (`ml/baseline_comparison.py`). Documented scope decision: retrospective analysis, not a fresh paired re-run (only revisit if time allows).
 - [ ] Phase 6 — Azure and infrastructure as code
 - [ ] Phase 7 — CI/CD and cloud validation
 - [ ] Phase 8 — React dashboard and final evaluation
