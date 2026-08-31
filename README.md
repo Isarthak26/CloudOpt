@@ -38,7 +38,7 @@ In the current local setup, the target app serves traffic on port `8080`, Promet
 - Prometheus
 - Grafana
 - k6
-- Pandas / scikit-learn are planned for later phases only
+- Pandas for the Phase 4 experiment dataset; scikit-learn is still later if needed
 
 ## Getting Started
 
@@ -120,6 +120,7 @@ The `load-tests/` folder contains staged k6 profiles and a small analyzer for ba
 Run the profiles from the repository root:
 
 ```bash
+k6 run load-tests/k6/scripts/warmup.js
 k6 run load-tests/k6/scripts/low_load.js
 k6 run load-tests/k6/scripts/medium_load.js
 k6 run load-tests/k6/scripts/high_load.js
@@ -131,16 +132,29 @@ Summarize the saved JSON results:
 python3 load-tests/analyze_results.py
 ```
 
-The analyzer reads files from `load-tests/results/` and writes a Markdown summary to `load-tests/results/baseline_summary.md`.
+The analyzer reads files from `load-tests/results/` and writes a Markdown summary to `load-tests/results/baseline_summary.md`. That table includes every local JSON file; the Phase 4 dataset uses only the nine frozen runs listed in `ml/canonical_runs.json`.
+
+### Phase 4 dataset and selector
+
+Rebuild the committed CSV from those frozen k6 files, then recommend the lowest-resource measured config that still meets a p95 latency threshold:
+
+```bash
+pip install -r ml/requirements.txt
+python3 ml/assemble_dataset.py
+python3 ml/recommend.py --load-level high
+python3 ml/recommend.py --load-level low --max-p95-ms 50
+```
+
+Default rule: among rows for that load level with `p95_latency_ms <= 50` and `http_req_failed_rate <= 0`, pick the smallest `cpu_limit` then `memory_limit_mb`. Unconstrained rows are treated as the largest allocation. This is not a trained model.
 
 ## Project Status / Roadmap
 
 - [x] Phase 0 — Repository and architecture groundwork
 - [x] Phase 1 — Measurable local application
 - [x] Phase 2 — Local metrics and observability
-- [ ] Phase 3 — Controlled experiments and result capture
-  - k6 profiles and baseline summary tooling exist; broader experiment dataset work is still ongoing.
+- [x] Phase 3 — Controlled experiments and result capture
 - [ ] Phase 4 — Dataset and simple ML
+  - Frozen 9-run CSV and a rule-based selector exist. scikit-learn is not started.
 - [ ] Phase 5 — Baseline comparison
 - [ ] Phase 6 — Azure and infrastructure as code
 - [ ] Phase 7 — CI/CD and cloud validation

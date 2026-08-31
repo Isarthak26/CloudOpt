@@ -16,3 +16,13 @@ venv/
 load-tests/results/*
 !load-tests/results/baseline_summary.md
 !load-tests/results/.gitkeep
+# Frozen Phase 4 runs only. Other JSON summaries stay local.
+!load-tests/results/low_load_baseline_v2_2026-08-29T12-32-27-350Z.json
+!load-tests/results/medium_load_baseline_v2_2026-08-29T12-34-28-458Z.json
+!load-tests/results/high_load_baseline_v2_2026-08-29T12-36-29-565Z.json
+!load-tests/results/low_load_constrained_v2_2026-08-29T12-39-37-501Z.json
+!load-tests/results/medium_load_constrained_v2_2026-08-29T12-41-38-436Z.json
+!load-tests/results/high_load_constrained_v2_2026-08-29T12-43-39-708Z.json
+!load-tests/results/low_load_stress_v1_2026-08-29T12-54-46-414Z.json
+!load-tests/results/medium_load_stress_v1_2026-08-29T12-56-47-306Z.json
+!load-tests/results/high_load_stress_v1_2026-08-29T12-58-48-527Z.json
