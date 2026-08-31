@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api import compute, health, orders, products
+from app.api import compute, health, orders, products, recommendations
 from app.database import Base, SessionLocal, engine
 from app.models import Order, Product  # Import models before create_all.
 
@@ -45,3 +45,4 @@ app.include_router(health.router)
 app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(compute.router)
+app.include_router(recommendations.router)

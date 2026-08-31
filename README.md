@@ -105,6 +105,12 @@ The CloudOpt backend currently exposes these endpoints:
 
 `/compute` is intentionally bounded and exists to create controlled CPU work for later experiment phases.
 
+Read-only recommendation endpoints (wrappers over `ml/`, not a trained model):
+
+- `GET /experiments/dataset`
+- `GET /recommendations/{load_level}` (`low`, `medium`, or `high`)
+- `GET /recommendations/comparison`
+
 ### Monitoring Stack
 
 - Target app: http://127.0.0.1:8080
