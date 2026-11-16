@@ -15,6 +15,7 @@ CloudOpt AI separates a small monitored application from the CloudOpt backend so
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
+- [Evaluation Pack](#evaluation-pack)
 - [Project Status / Roadmap](#project-status--roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -168,6 +169,10 @@ npm run dev
 ```
 
 The dev server proxies the backend routes to `http://127.0.0.1:8000`, so no CORS configuration is needed. See [frontend/README.md](frontend/README.md) for details.
+
+## Evaluation Pack
+
+The evaluator-ready material is indexed in [docs/README.md](docs/README.md). It includes finalized requirements, architecture and behaviour diagrams, database/data design, module design, validation results, risk analysis, performance results, current screenshots, a timed demo script, a stakeholder-feedback form, and the completed-versus-remaining statement.
 
 ## Project Status / Roadmap
 

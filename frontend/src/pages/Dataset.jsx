@@ -4,6 +4,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -15,19 +16,19 @@ import { ErrorMessage, Loading } from "../components/Status";
 import { titleCase } from "../format";
 
 const COLUMNS = [
-  { key: "config_label", label: "Config", mono: true },
-  { key: "cpu_limit", label: "CPU limit", mono: true },
-  { key: "memory_limit_mb", label: "Memory (MB)", mono: true },
-  { key: "load_level", label: "Load level" },
+  { key: "config_label", label: "Configuration", mono: true },
+  { key: "cpu_limit", label: "CPU", mono: true },
+  { key: "memory_limit_mb", label: "Memory", mono: true, suffix: " MB" },
+  { key: "load_level", label: "Load" },
   { key: "vus", label: "VUs", mono: true },
   { key: "total_requests", label: "Requests", mono: true },
-  { key: "avg_latency_ms", label: "Avg latency (ms)", mono: true, digits: 2 },
-  { key: "p95_latency_ms", label: "p95 latency (ms)", mono: true, digits: 2 },
-  { key: "http_req_failed_rate", label: "Fail rate", mono: true, digits: 2 },
+  { key: "avg_latency_ms", label: "Avg latency", mono: true, digits: 2, suffix: " ms" },
+  { key: "p95_latency_ms", label: "p95 latency", mono: true, digits: 2, suffix: " ms" },
+  { key: "http_req_failed_rate", label: "Failures", mono: true, percent: true },
 ];
 
 const LOAD_ORDER = ["low", "medium", "high"];
-const LINE_COLORS = ["#0f7b8a", "#8fa3b5", "#a3352c"];
+const LINE_COLORS = ["#244f7c", "#3e8f7c", "#d67a4e"];
 
 function compareValues(a, b) {
   if (a === null || a === undefined) return 1;
@@ -38,9 +39,12 @@ function compareValues(a, b) {
 
 function formatCell(row, column) {
   const value = row[column.key];
-  if (value === null || value === undefined) return "—";
-  if (column.digits !== undefined) return Number(value).toFixed(column.digits);
-  return String(value);
+  if (value === null || value === undefined) return "Unconstrained";
+  if (column.percent) return `${(Number(value) * 100).toFixed(2)}%`;
+  if (column.digits !== undefined) {
+    return `${Number(value).toFixed(column.digits)}${column.suffix ?? ""}`;
+  }
+  return `${value}${column.suffix ?? ""}`;
 }
 
 export default function Dataset() {
@@ -48,6 +52,8 @@ export default function Dataset() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sort, setSort] = useState({ key: "load_level", direction: "asc" });
+  const [loadFilter, setLoadFilter] = useState("all");
+  const [configFilter, setConfigFilter] = useState("all");
 
   useEffect(() => {
     let active = true;
@@ -66,19 +72,29 @@ export default function Dataset() {
     };
   }, []);
 
+  const configs = useMemo(
+    () => [...new Set(rows.map((row) => row.config_label))],
+    [rows],
+  );
+
+  const filteredRows = useMemo(
+    () =>
+      rows.filter(
+        (row) =>
+          (loadFilter === "all" || row.load_level === loadFilter) &&
+          (configFilter === "all" || row.config_label === configFilter),
+      ),
+    [rows, loadFilter, configFilter],
+  );
+
   const sortedRows = useMemo(() => {
-    const copy = [...rows];
+    const copy = [...filteredRows];
     copy.sort((a, b) => {
       const result = compareValues(a[sort.key], b[sort.key]);
       return sort.direction === "asc" ? result : -result;
     });
     return copy;
-  }, [rows, sort]);
-
-  const configs = useMemo(
-    () => [...new Set(rows.map((row) => row.config_label))],
-    [rows],
-  );
+  }, [filteredRows, sort]);
 
   const chartData = useMemo(
     () =>
@@ -105,14 +121,26 @@ export default function Dataset() {
     );
   }
 
+  function ariaSort(key) {
+    if (sort.key !== key) return "none";
+    return sort.direction === "asc" ? "ascending" : "descending";
+  }
+
   return (
     <main className="page">
-      <div className="page-header">
-        <h1>Experiment Data Explorer</h1>
-        <p>
-          The frozen nine-row dataset every recommendation is derived from,
-          served straight from <span className="mono">/experiments/dataset</span>.
-        </p>
+      <div className="page-header split-header">
+        <div>
+          <span className="eyebrow">Evidence explorer</span>
+          <h1>Experiment dataset</h1>
+          <p>
+            Inspect the canonical measurements behind every recommendation. Filter
+            and sort the nine controlled runs without changing the source data.
+          </p>
+        </div>
+        <div className="rule-summary">
+          <span>Dataset scope</span>
+          <strong>{rows.length || 9} runs · 3 loads · 3 profiles</strong>
+        </div>
       </div>
 
       {loading && <Loading label="Loading the experiment dataset…" />}
@@ -120,88 +148,134 @@ export default function Dataset() {
 
       {!loading && !error && rows.length > 0 && (
         <>
-          <section className="card">
-            <h2>All measured runs ({rows.length})</h2>
+          <section className="card table-card">
+            <div className="card-heading dataset-heading">
+              <div>
+                <span className="card-kicker">Canonical measurements</span>
+                <h2>Controlled experiment runs</h2>
+              </div>
+              <span className="record-count">Showing {sortedRows.length} of {rows.length}</span>
+            </div>
+
+            <div className="filter-bar">
+              <label>
+                <span>Traffic load</span>
+                <select value={loadFilter} onChange={(event) => setLoadFilter(event.target.value)}>
+                  <option value="all">All load levels</option>
+                  {LOAD_ORDER.map((level) => (
+                    <option key={level} value={level}>{titleCase(level)} load</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Resource profile</span>
+                <select value={configFilter} onChange={(event) => setConfigFilter(event.target.value)}>
+                  <option value="all">All configurations</option>
+                  {configs.map((config) => (
+                    <option key={config} value={config}>{config}</option>
+                  ))}
+                </select>
+              </label>
+              {(loadFilter !== "all" || configFilter !== "all") && (
+                <button
+                  className="clear-filter"
+                  type="button"
+                  onClick={() => {
+                    setLoadFilter("all");
+                    setConfigFilter("all");
+                  }}
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+
             <div className="table-scroll">
-              <table>
+              <table className="data-table">
                 <thead>
                   <tr>
                     {COLUMNS.map((column) => (
-                      <th
-                        key={column.key}
-                        className="sortable"
-                        onClick={() => toggleSort(column.key)}
-                      >
-                        {column.label}
-                        {sort.key === column.key
-                          ? sort.direction === "asc"
-                            ? " ▲"
-                            : " ▼"
-                          : ""}
+                      <th key={column.key} aria-sort={ariaSort(column.key)}>
+                        <button className="sort-button" type="button" onClick={() => toggleSort(column.key)}>
+                          {column.label}
+                          <span aria-hidden="true">
+                            {sort.key === column.key
+                              ? sort.direction === "asc" ? "↑" : "↓"
+                              : "↕"}
+                          </span>
+                        </button>
                       </th>
                     ))}
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedRows.map((row) => (
-                    <tr key={`${row.config_label}-${row.load_level}`}>
-                      {COLUMNS.map((column) => (
-                        <td
-                          key={column.key}
-                          className={column.mono ? "mono" : undefined}
-                        >
-                          {formatCell(row, column)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                  {sortedRows.map((row) => {
+                    const passes = row.p95_latency_ms <= 50 && row.http_req_failed_rate <= 0;
+                    return (
+                      <tr key={`${row.config_label}-${row.load_level}`} className={passes ? "" : "threshold-row"}>
+                        {COLUMNS.map((column) => (
+                          <td key={column.key} className={column.mono ? "mono" : undefined}>
+                            {column.key === "load_level" ? titleCase(row[column.key]) : formatCell(row, column)}
+                          </td>
+                        ))}
+                        <td><span className={`pill ${passes ? "success" : "danger"}`}>{passes ? "Pass" : "Over SLO"}</span></td>
+                      </tr>
+                    );
+                  })}
+                  {sortedRows.length === 0 && (
+                    <tr><td colSpan={COLUMNS.length + 1} className="empty-table">No runs match these filters.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
             <p className="caption">
-              Each row is one k6 run against the target app at a fixed CPU/memory
-              limit. An early cold-start bug made the first requests of a run
-              dominate the percentiles, so a warmup stage was added and the
-              affected runs were re-measured; only the re-measured runs listed in{" "}
-              <span className="mono">ml/canonical_runs.json</span> are included
-              here.
+              Only the re-measured runs listed in <span className="mono">ml/canonical_runs.json</span>
+              are included. A warm-up stage prevents cold-start requests from distorting the percentiles.
             </p>
           </section>
 
-          <section className="card">
-            <h2>p95 latency across load levels</h2>
-            <div style={{ width: "100%", height: 320 }}>
+          <section className="card chart-card">
+            <div className="card-heading">
+              <div>
+                <span className="card-kicker">Performance curve</span>
+                <h2>p95 latency across traffic levels</h2>
+              </div>
+              <span className="legend-note">50 ms acceptance boundary</span>
+            </div>
+            <div className="chart-container large">
               <ResponsiveContainer>
-                <LineChart data={chartData} margin={{ top: 16, right: 24 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e6ebf1" />
-                  <XAxis dataKey="load" />
-                  <YAxis
-                    label={{
-                      value: "p95 latency (ms)",
-                      angle: -90,
-                      position: "insideLeft",
-                    }}
+                <LineChart data={chartData} margin={{ top: 20, right: 20, left: -8, bottom: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#dce4ef" />
+                  <XAxis dataKey="load" axisLine={false} tickLine={false} tick={{ fill: "#69788d", fontSize: 12 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#69788d", fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 12, border: "1px solid #dce4ef", boxShadow: "0 12px 30px rgba(15, 35, 65, .12)" }}
+                    formatter={(value) => `${value} ms`}
                   />
-                  <Tooltip formatter={(value) => `${value} ms`} />
-                  <Legend />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 16 }} />
+                  <ReferenceLine y={50} stroke="#d86d51" strokeDasharray="5 5" label={{ value: "SLO", fill: "#a94f3b", fontSize: 11, position: "insideTopRight" }} />
                   {configs.map((config, index) => (
                     <Line
                       key={config}
                       type="monotone"
                       dataKey={config}
                       stroke={LINE_COLORS[index % LINE_COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
+                      strokeWidth={2.5}
+                      dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
+                      activeDot={{ r: 6 }}
                     />
                   ))}
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <p className="caption">
-              Lines stay flat until high load, where the smallest configuration
-              falls off a cliff — that gap is the whole argument for measuring
-              rather than guessing.
-            </p>
+            <div className="chart-insight">
+              <span className="insight-mark">!</span>
+              <p>
+                The 0.25 CPU / 128 MB profile remains stable at low and medium load,
+                then reaches <strong>275.87 ms p95</strong> under high traffic—well beyond the SLO.
+              </p>
+            </div>
           </section>
         </>
       )}

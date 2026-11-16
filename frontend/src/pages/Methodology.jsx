@@ -1,77 +1,148 @@
 const PHASES = [
-  { done: true, label: "Phase 0 — Repository and architecture groundwork" },
-  { done: true, label: "Phase 1 — Measurable local application" },
-  { done: true, label: "Phase 2 — Local metrics and observability" },
-  { done: true, label: "Phase 3 — Controlled experiments and result capture" },
-  { done: true, label: "Phase 4 — Dataset and simple recommendation" },
-  { done: true, label: "Phase 5 — Baseline comparison" },
-  { done: false, label: "Phase 6 — Azure and infrastructure as code (future work)" },
-  { done: false, label: "Phase 7 — CI/CD and cloud validation (CI test automation only so far)" },
-  { done: true, label: "Phase 8 — This dashboard and final evaluation" },
+  { done: true, label: "Foundation", detail: "Repository, API and measurable target workload" },
+  { done: true, label: "Observability", detail: "Prometheus metrics and Grafana dashboard" },
+  { done: true, label: "Experiments", detail: "Repeatable k6 profiles and canonical result capture" },
+  { done: true, label: "Decision engine", detail: "Explainable threshold selector and baseline comparison" },
+  { done: false, label: "Cloud validation", detail: "Azure infrastructure, deployment and paired re-runs" },
+  { done: false, label: "Delivery automation", detail: "CI/CD image build, security gates and controlled release" },
+];
+
+const NEXT_STEPS = [
+  {
+    priority: "01",
+    title: "Repeat experiments",
+    description: "Run every workload/configuration pair multiple times and report variance, confidence intervals and outliers.",
+    tag: "Evidence quality",
+  },
+  {
+    priority: "02",
+    title: "Add live Prometheus views",
+    description: "Expose safe query endpoints for request rate, CPU, memory and latency so this dashboard can show current behavior.",
+    tag: "Product value",
+  },
+  {
+    priority: "03",
+    title: "Model real cost",
+    description: "Attach an explicit hourly cost or normalized resource score to each profile and quantify the trade-off against latency.",
+    tag: "FinOps",
+  },
+  {
+    priority: "04",
+    title: "Validate on Azure",
+    description: "Provision ACR and AKS with Terraform, deploy the target app, then rerun baseline and recommended profiles in the same environment.",
+    tag: "Cloud delivery",
+  },
 ];
 
 export default function Methodology() {
   return (
     <main className="page">
-      <div className="page-header">
-        <h1>Methodology</h1>
-        <p>The short version of how the numbers in this dashboard were produced.</p>
+      <div className="page-header split-header">
+        <div>
+          <span className="eyebrow">Method & roadmap</span>
+          <h1>How the evidence is produced</h1>
+          <p>
+            CloudOpt is deliberately small and auditable: measured inputs, explicit
+            thresholds, and recommendations limited to configurations that were tested.
+          </p>
+        </div>
+        <div className="rule-summary">
+          <span>Current maturity</span>
+          <strong>Local proof of concept</strong>
+        </div>
       </div>
 
-      <section className="card">
-        <h2>What the project is</h2>
-        <p>
-          CloudOpt AI runs a small monitored FastAPI workload under controlled
-          traffic, measures it at different CPU and memory limits, and uses those
-          measurements to recommend the smallest configuration that still meets a
-          latency and failure-rate requirement.
-        </p>
-        <p>
-          The measurement stack is k6 for load generation and Prometheus and
-          Grafana for observability. The dataset is nine frozen runs: three
-          resource configurations across low, medium and high load.
-        </p>
+      <section className="method-flow" aria-label="Recommendation process">
+        <article>
+          <span>1</span>
+          <div><strong>Generate traffic</strong><p>k6 executes low, medium and high workload profiles.</p></div>
+        </article>
+        <i aria-hidden="true">→</i>
+        <article>
+          <span>2</span>
+          <div><strong>Capture evidence</strong><p>Latency, throughput and failures are saved per allocation.</p></div>
+        </article>
+        <i aria-hidden="true">→</i>
+        <article>
+          <span>3</span>
+          <div><strong>Apply guardrails</strong><p>Profiles must keep p95 ≤ 50 ms with zero failures.</p></div>
+        </article>
+        <i aria-hidden="true">→</i>
+        <article>
+          <span>4</span>
+          <div><strong>Choose smallest</strong><p>The least CPU, then memory, wins among qualified runs.</p></div>
+        </article>
       </section>
 
-      <section className="card">
-        <h2>How a recommendation is made</h2>
-        <p>
-          Among the rows for the requested load level, the selector keeps those
-          with <span className="mono">p95_latency_ms &lt;= 50</span> and{" "}
-          <span className="mono">http_req_failed_rate &lt;= 0</span>, then picks
-          the smallest <span className="mono">cpu_limit</span>, breaking ties on{" "}
-          <span className="mono">memory_limit_mb</span>. Unconstrained runs count
-          as the largest allocation.
-        </p>
-        <p>
-          This is a transparent threshold rule, not a trained model. It does not
-          forecast load and never extrapolates beyond configurations that were
-          actually measured — which is also its main limitation.
-        </p>
-      </section>
+      <div className="method-grid">
+        <section className="card methodology-card">
+          <span className="card-kicker">Decision rule</span>
+          <h2>Transparent by design</h2>
+          <p>
+            For the selected load level, CloudOpt keeps rows where
+            <span className="inline-code">p95_latency_ms ≤ 50</span> and
+            <span className="inline-code">http_req_failed_rate = 0</span>.
+            It then sorts eligible rows by CPU limit and memory limit.
+          </p>
+          <div className="formula-box mono">
+            qualified → min(cpu_limit, memory_limit_mb)
+          </div>
+          <p className="caption">
+            Unconstrained runs are treated as the largest allocation. The selector
+            does not forecast unseen traffic or invent an untested resource profile.
+          </p>
+        </section>
 
-      <section className="card">
-        <h2>Roadmap</h2>
-        <ul className="checklist">
+        <section className="card limitations-card">
+          <span className="card-kicker">Interpretation boundary</span>
+          <h2>What the result does not claim</h2>
+          <ul>
+            <li>It is not a trained machine-learning model.</li>
+            <li>It does not prove production or multi-application generalization.</li>
+            <li>It does not yet include cloud billing or energy measurements.</li>
+            <li>The comparison is retrospective, not a fresh paired deployment.</li>
+          </ul>
+        </section>
+      </div>
+
+      <section className="card roadmap-card">
+        <div className="section-heading compact">
+          <div>
+            <span className="eyebrow">Delivery progress</span>
+            <h2>Project roadmap</h2>
+          </div>
+          <span className="section-note">4 of 6 stages complete</span>
+        </div>
+        <div className="roadmap-list">
           {PHASES.map((phase) => (
-            <li key={phase.label}>
-              <span className="mono">{phase.done ? "[x]" : "[ ]"}</span>{" "}
-              {phase.label}
-            </li>
+            <article className={phase.done ? "complete" : "future"} key={phase.label}>
+              <span className="roadmap-marker">{phase.done ? "✓" : ""}</span>
+              <div><strong>{phase.label}</strong><p>{phase.detail}</p></div>
+              <span className={`pill ${phase.done ? "success" : "neutral"}`}>
+                {phase.done ? "Complete" : "Next"}
+              </span>
+            </article>
           ))}
-        </ul>
+        </div>
       </section>
 
-      <section className="card">
-        <h2>Honest summary</h2>
-        <p>
-          The project delivers a working, measured, explainable recommendation
-          loop on a local stack. Phase 5 is a retrospective comparison over the
-          frozen Phase 4 measurements rather than a fresh paired re-run, Phase 6
-          (Azure and Terraform) is documented as future work rather than built,
-          and this dashboard is a read-only presentation layer over the existing
-          backend API — it duplicates none of the selector logic.
-        </p>
+      <section className="section-block next-section" aria-labelledby="next-heading">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">Recommended next work</span>
+            <h2 id="next-heading">Four changes that strengthen the project most</h2>
+          </div>
+          <span className="section-note">Ordered by research and demo value</span>
+        </div>
+        <div className="next-grid">
+          {NEXT_STEPS.map((step) => (
+            <article key={step.priority}>
+              <div className="next-card-topline"><span>{step.priority}</span><b>{step.tag}</b></div>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </main>
   );

@@ -1,63 +1,124 @@
 :root {
-  --bg: #f7f9fb;
+  --bg: #f4f6f7;
+  --bg-warm: #f7f5f0;
   --surface: #ffffff;
-  --border: #dfe5ec;
-  --text: #16202b;
-  --muted: #5c6b7a;
-  --accent: #0f7b8a;
-  --accent-soft: #e6f4f6;
-  --success: #1f7a4d;
-  --success-soft: #e8f5ee;
-  --danger: #a3352c;
-  --danger-soft: #fbeceb;
+  --surface-soft: #eef3f3;
+  --border: #dbe3e6;
+  --border-strong: #c9d5d9;
+  --text: #142732;
+  --muted: #667781;
+  --navy: #102a3a;
+  --navy-light: #193c4d;
+  --accent: #2c7a70;
+  --accent-dark: #205f58;
+  --accent-soft: #e3f2ee;
+  --success: #26755d;
+  --success-soft: #e6f4ee;
+  --danger: #a84e3d;
+  --danger-soft: #fbece8;
+  --warning: #bf6f3e;
+  --warning-soft: #fbefe5;
+  --blue: #315f89;
+  --blue-soft: #e9f0f7;
+  --shadow-xs: 0 1px 2px rgba(19, 40, 51, 0.05), 0 4px 12px rgba(19, 40, 51, 0.04);
+  --shadow-sm: 0 8px 28px rgba(19, 40, 51, 0.08);
+  --shadow-lg: 0 22px 55px rgba(11, 31, 43, 0.18);
 
-  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: "Avenir Next", Avenir, "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--text);
-  background-color: var(--bg);
+  background: var(--bg);
+  font-synthesis: none;
   line-height: 1.55;
+  text-rendering: optimizeLegibility;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  background: var(--bg);
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 86% -10%, rgba(44, 122, 112, 0.08), transparent 28rem),
+    var(--bg);
+  color: var(--text);
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
 }
 
 h1,
 h2,
 h3 {
-  line-height: 1.25;
-  margin: 0 0 0.5rem;
-  font-weight: 650;
+  color: var(--text);
+  font-weight: 680;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
 }
 
 h1 {
-  font-size: 1.85rem;
+  margin-bottom: 0.7rem;
+  font-size: clamp(2rem, 3vw, 3rem);
 }
 
 h2 {
-  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-size: clamp(1.2rem, 1.6vw, 1.5rem);
+}
+
+h3 {
+  margin-bottom: 0.4rem;
+  font-size: 1.02rem;
 }
 
 p {
-  margin: 0 0 0.75rem;
+  margin-bottom: 0.8rem;
 }
 
 a {
+  color: var(--accent-dark);
+}
+
+a:hover {
   color: var(--accent);
 }
 
 code,
 .mono {
-  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas,
-    monospace;
-  font-size: 0.92em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9em;
+  letter-spacing: -0.02em;
 }
 
-button {
-  font: inherit;
-  cursor: pointer;
+:focus-visible {
+  outline: 3px solid rgba(44, 122, 112, 0.35);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: #cce7df;
+  color: #0c302c;
 }
