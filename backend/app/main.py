@@ -1,6 +1,9 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -37,7 +40,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="CloudOpt AI API",
     version="0.1.0",
-    description="Phase 1: measurable FastAPI application backed by PostgreSQL.",
+    description="Measured cloud-resource decision support and evidence dashboard.",
     lifespan=lifespan,
 )
 
@@ -46,3 +49,23 @@ app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(compute.router)
 app.include_router(recommendations.router)
+
+
+# A production frontend build can be served by the same FastAPI process. This
+# keeps the public deployment same-origin and avoids a separate CORS surface.
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+FRONTEND_INDEX = FRONTEND_DIST / "index.html"
+
+if FRONTEND_INDEX.is_file():
+    assets_dir = FRONTEND_DIST / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="frontend-assets")
+
+    @app.get("/{frontend_path:path}", include_in_schema=False)
+    def serve_frontend(frontend_path: str) -> FileResponse:
+        """Serve built files and fall back to index.html for React routes."""
+
+        candidate = (FRONTEND_DIST / frontend_path).resolve()
+        if candidate.is_relative_to(FRONTEND_DIST.resolve()) and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(FRONTEND_INDEX)

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudopt-lab
+  labels:
+    app.kubernetes.io/part-of: cloudopt
+    cloudopt.io/experiment-scope: "true"

@@ -2,6 +2,8 @@
 
 CloudOpt AI is a student project for measuring application workloads, comparing resource configurations, and building toward data-driven cloud resource recommendations.
 
+**Live evaluation dashboard:** https://cloudopt-ai-tau.vercel.app
+
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
 [![CI](https://github.com/Isarthak26/CloudOpt/actions/workflows/ci.yml/badge.svg)](https://github.com/Isarthak26/CloudOpt/actions/workflows/ci.yml)
 
@@ -15,6 +17,7 @@ CloudOpt AI separates a small monitored application from the CloudOpt backend so
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
+- [Live Deployment](#live-deployment)
 - [Evaluation Pack](#evaluation-pack)
 - [Project Status / Roadmap](#project-status--roadmap)
 - [Contributing](#contributing)
@@ -169,6 +172,10 @@ npm run dev
 ```
 
 The dev server proxies the backend routes to `http://127.0.0.1:8000`, so no CORS configuration is needed. See [frontend/README.md](frontend/README.md) for details.
+
+## Live Deployment
+
+The React dashboard and lightweight FastAPI decision API are deployed together on Vercel at [cloudopt-ai-tau.vercel.app](https://cloudopt-ai-tau.vercel.app). This public evaluation deployment presents the frozen experiment evidence and recommendations; it does not run k6 or mutate Kubernetes resources. The intended Vercel-to-AKS/EKS experiment architecture is documented in [docs/DEPLOYMENT_ARCHITECTURE.md](docs/DEPLOYMENT_ARCHITECTURE.md).
 
 ## Evaluation Pack
 

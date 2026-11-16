@@ -1,0 +1,17 @@
+.git
+.github
+.venv
+.pytest_cache
+**/__pycache__
+**/*.pyc
+**/node_modules
+*.db
+.env
+docs/evidence
+grafana
+monitoring
+target-app
+load-tests
+backend/tests
+ml/tests
+frontend/dist

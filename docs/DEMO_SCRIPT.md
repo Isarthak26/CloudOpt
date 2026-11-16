@@ -2,12 +2,14 @@
 
 Target duration: **7–8 minutes**, followed by questions.
 
+**Live dashboard:** https://cloudopt-ai-tau.vercel.app
+
 ## Before the evaluation
 
 1. Install backend, ML, target-app, and frontend dependencies.
 2. Run both Python test suites, frontend lint, and frontend build.
-3. Start the backend with PostgreSQL or the approved SQLite demo configuration.
-4. Start the React frontend and verify the green **Backend connected** badge.
+3. Open the Vercel deployment and verify the green **Backend connected** badge.
+4. Keep the local backend/frontend commands ready only as a fallback.
 5. If demonstrating monitoring, start Docker Compose and verify Prometheus targets before the session.
 6. Keep this script, `docs/EVALUATION_PACK.md`, and the dashboard open in separate tabs.
 
@@ -63,7 +65,7 @@ Show that the API and database are healthy. Briefly point out the dataset, recom
 
 ### 2:15–3:15 — Dashboard overview
 
-Open `http://127.0.0.1:5173/`.
+Open `https://cloudopt-ai-tau.vercel.app/`.
 
 Point out:
 
@@ -99,7 +101,7 @@ Open **Methodology** and show:
 
 - The explicit decision rule.
 - What the project does not claim.
-- Cloud validation and delivery automation as remaining work.
+- The Vercel evaluation deployment is complete; the authenticated AKS/EKS experiment runner remains next work.
 
 ### 5:45–6:30 — Tests
 
@@ -109,7 +111,7 @@ Show the validation record or run:
 .venv/bin/python -m pytest -q
 ```
 
-Expected result: all 21 Python tests pass. Mention that frontend lint and production build also pass.
+Expected result: all 22 Python tests pass. Mention that frontend lint and production build also pass.
 
 ### 6:30–7:30 — Limitations and remaining work
 

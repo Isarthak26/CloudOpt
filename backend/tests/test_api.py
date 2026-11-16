@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main import FRONTEND_INDEX, app
 
 
 def test_health_checks_database() -> None:
@@ -39,3 +39,16 @@ def test_unknown_product_returns_not_found() -> None:
         response = client.get("/products/9999")
 
     assert response.status_code == 404
+
+
+def test_built_frontend_and_spa_route_are_served() -> None:
+    assert FRONTEND_INDEX.is_file(), "Build frontend before running the complete test suite"
+
+    with TestClient(app) as client:
+        home = client.get("/")
+        comparison = client.get("/comparison")
+
+    assert home.status_code == 200
+    assert comparison.status_code == 200
+    assert '<div id="root"></div>' in home.text
+    assert home.text == comparison.text

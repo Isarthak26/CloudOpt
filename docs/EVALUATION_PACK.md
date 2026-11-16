@@ -4,7 +4,7 @@
 **Student:** Sarthak Bordia<br>
 **Programme:** B.Tech CSE (DevOps Specialization)<br>
 **Evaluation status date:** 16 November 2026<br>
-**Current maturity:** Working local proof of concept
+**Current maturity:** Public evaluation deployment backed by controlled local evidence
 
 ## 1. Evaluation checklist
 
@@ -16,12 +16,12 @@
 | Database or data design | Complete for current scope | [Section 6](#6-database-and-data-design), `backend/app/models/`, `ml/data/experiment_dataset.csv` |
 | Module or component design | Complete | [Section 7](#7-module-and-component-design) |
 | Technology implementation | Working | [Section 8](#8-technology-implementation) |
-| MVP / technical proof of concept | Working local MVP | [Section 9](#9-working-mvp-and-proof-of-concept) |
-| Test cases and initial validation | 21 Python tests pass; frontend lint/build pass | [Section 10](#10-test-cases-and-initial-validation) |
+| MVP / technical proof of concept | Working Vercel deployment plus local experiment stack | [Section 9](#9-working-mvp-and-proof-of-concept) |
+| Test cases and initial validation | 22 Python tests pass; frontend lint/build and live HTTP checks pass | [Section 10](#10-test-cases-and-initial-validation) |
 | User or stakeholder feedback | Collection template ready; real feedback not yet recorded | [Section 11](#11-user-or-stakeholder-feedback) |
 | Updated risk analysis | Complete | [Section 12](#12-updated-risk-analysis) |
 | Performance or accuracy results | Complete for the frozen local experiment set | [Section 13](#13-performance-and-decision-results) |
-| Screenshots or demo evidence | Five current screenshots captured | [Section 14](#14-screenshots-and-demo-evidence), `docs/evidence/` |
+| Screenshots or demo evidence | Six current screenshots captured, including Vercel | [Section 14](#14-screenshots-and-demo-evidence), `docs/evidence/` |
 | Work completed and work remaining | Complete | [Section 15](#15-work-completed-and-work-remaining) |
 
 ## 2. Project summary
@@ -80,7 +80,7 @@ Within the frozen local experiment set, CloudOpt selects a lower finite allocati
 
 ### 3.3 Scope boundary
 
-The MVP includes local measurement, monitoring, dataset assembly, explainable recommendation, comparison, and presentation. It does not currently include a trained ML model, workload forecasting, automatic scaling, Azure deployment, Terraform, Kubernetes, a production security model, or a verified currency-based cost calculation.
+The MVP includes local measurement, monitoring, dataset assembly, explainable recommendation, comparison, presentation, and a public Vercel evaluation deployment. It does not currently include a trained ML model, workload forecasting, automatic scaling, a live AKS/EKS experiment runner, a production security model, or a verified currency-based cost calculation.
 
 ## 4. System architecture and design
 
@@ -261,7 +261,7 @@ The frontend contains no duplicated selection logic. It requests results from th
 | Containers | Docker, Docker Compose | Target, Prometheus, and Grafana local stack |
 | Web UI | React, Vite, React Router, Recharts | Five-page read-only evidence dashboard |
 | Validation | pytest, oxlint, Vite build | API, data, selector, comparison, metrics, lint, and build checks |
-| Automation | GitHub Actions | Backend and recommendation test job; deployment intentionally absent |
+| Automation | GitHub Actions, Vercel | CI builds/lints React and runs all Python tests; Vercel hosts the evaluation dashboard/API |
 
 ## 9. Working MVP and proof of concept
 
@@ -271,6 +271,8 @@ The MVP demonstrates this complete local evidence path:
 measurable API -> controlled k6 load -> saved summaries -> canonical CSV
 -> explainable selection -> baseline comparison -> FastAPI JSON -> React dashboard
 ```
+
+The public evaluation deployment is available at https://cloudopt-ai-tau.vercel.app. It serves the React application and FastAPI API on one domain. Kubernetes execution remains separated as described in `docs/DEPLOYMENT_ARCHITECTURE.md`.
 
 ### Demonstrable functions
 
@@ -315,16 +317,18 @@ For high load, it returned `cpu_1_mem_512`, p95 `11.40 ms`, failure rate `0%`, w
 | TC-14 | Frontend code quality | oxlint completes without errors | `npm run lint` | Pass |
 | TC-15 | Production frontend build | Vite emits a deployable `dist/` bundle | `npm run build` | Pass with bundle-size warning |
 | TC-16 | Direct recommendations URL | Page responds as frontend HTML, not API 404 | HTTP check after proxy-route fix | Pass |
+| TC-17 | Full-stack production entrypoint | `/` and a React deep link return the same built SPA through FastAPI | `backend/tests/test_api.py` | Pass |
 
 ### 10.2 Validation record — 16 November 2026
 
 | Command | Result |
 | --- | --- |
-| `.venv/bin/python -m pytest -q` | **21 passed** in 0.63 s |
+| `.venv/bin/python -m pytest -q` | **22 passed** in 0.63 s |
 | `cd frontend && npm run lint` | **Pass**, no lint errors |
 | `cd frontend && npm run build` | **Pass**, 607 modules transformed |
 | Live `GET /health` | **Pass**, API and database `ok` |
 | Live `GET /recommendations/high` | **Pass**, correct selection and rejection explanation |
+| Anonymous Vercel `/`, `/health`, `/comparison` | **Pass**, HTTP 200 |
 
 Known validation notes:
 
@@ -356,8 +360,8 @@ Scale: likelihood and impact are Low, Medium, or High.
 | Small, single-application dataset does not generalize | High | High | No trained-model or production-generalization claim | Add more workloads, repetitions, and application types before ML |
 | Resource limits are assigned by manifest/filename family, not embedded in k6 JSON | Medium | High | Frozen manifest documents the mapping | Store run metadata and measurements together at capture time |
 | `unconstrained` has no finite cost, so exact savings cannot be calculated | High | Medium | Claims use “lower allocation,” not percent cost saving | Define a finite static baseline and add provider pricing |
-| Azure, AKS, and Terraform remain unvalidated | High | Medium | Clearly outside current MVP | Implement only with budget controls and cleanup plan |
-| No authentication or production hardening | Medium | High in public deployment | Services are local-only | Add auth, TLS, secret management, rate limiting, and security review before exposure |
+| AKS/EKS runner and Terraform remain unvalidated | High | Medium | Vercel is presentation/read-only; cluster runner is explicitly separate | Implement only with budget controls, namespace-scoped access, and cleanup |
+| No authentication for future control actions | Medium | High | Public Vercel deployment has no Kubernetes credentials or mutation API | Add identity, authorization, rate limits, and audit logs before experiment submission |
 | Mutable `latest` Grafana image can reduce reproducibility | Medium | Medium | Other critical versions are constrained | Pin a tested Grafana image version |
 | Dependency deprecation warning may become a future failure | Medium | Medium | Captured in validation notes | Align compatible FastAPI/Starlette/httpx versions |
 | Large frontend bundle affects first load | Medium | Low for local demo | Build succeeds | Lazy-load routes and separate chart dependencies |
@@ -392,7 +396,7 @@ This is configuration-selection accuracy against an explicit rule, not predictiv
 
 ## 14. Screenshots and demo evidence
 
-The following screenshots were captured from the running local frontend and backend on 16 November 2026.
+The following screenshots were captured from the running local stack and the public Vercel deployment on 16 November 2026.
 
 ### Overview and live high-load decision
 
@@ -414,6 +418,10 @@ The following screenshots were captured from the running local frontend and back
 
 ![Methodology page showing the transparent rule, limitations, and remaining cloud work](evidence/05-methodology.png)
 
+### Public Vercel deployment
+
+![CloudOpt running publicly on Vercel with the backend connected](evidence/06-live-vercel.png)
+
 The evaluator can reproduce the live demonstration with `docs/DEMO_SCRIPT.md`.
 
 ## 15. Work completed and work remaining
@@ -434,6 +442,8 @@ The evaluator can reproduce the live demonstration with `docs/DEMO_SCRIPT.md`.
 - Python test suites, frontend lint/build, and test-only GitHub Actions workflow.
 - Evaluation documentation, diagrams, risk register, feedback protocol, demo script, and current screenshots.
 - Direct-refresh routing bug on the Recommendations page fixed by narrowing the development API proxy.
+- Public Vercel deployment of the React dashboard and FastAPI decision API.
+- Generic non-root AKS/EKS target-app manifests and deployment guidance.
 
 ### Remaining before final evaluation
 
@@ -444,6 +454,7 @@ Priority 1 — strengthen the evidence:
 - Capture CPU and memory utilization for every canonical run, not only latency/failures.
 - Replace the unbounded baseline with a finite static configuration if percentage resource or cost savings will be claimed.
 - Conduct the small stakeholder feedback study and summarize real findings.
+- Implement the authenticated Kubernetes experiment runner, persistent result store, and cleanup workflow described in `docs/DEPLOYMENT_ARCHITECTURE.md`.
 
 Priority 2 — improve delivery quality:
 
@@ -454,8 +465,8 @@ Priority 2 — improve delivery quality:
 
 ### Deferred future scope
 
-- Terraform-based Azure infrastructure, ACR, and AKS deployment.
-- Cloud validation under a controlled budget and explicit cleanup plan.
+- Terraform-based AKS/EKS infrastructure and registry automation.
+- Live cluster validation under a controlled budget and explicit cleanup plan.
 - Container build/security stages and controlled deployment in CI/CD.
 - A trained ML model only after the dataset is large and diverse enough, compared fairly with the current transparent baseline.
 

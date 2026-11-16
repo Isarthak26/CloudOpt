@@ -33,7 +33,11 @@ _load_local_env()
 class Settings:
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "postgresql+psycopg://cloudopt:change-me@localhost:5432/cloudopt",
+        (
+            "sqlite:////tmp/cloudopt-vercel.db"
+            if os.getenv("VERCEL")
+            else "postgresql+psycopg://cloudopt:change-me@localhost:5432/cloudopt"
+        ),
     )
 
 
